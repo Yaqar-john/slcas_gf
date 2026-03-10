@@ -100,7 +100,7 @@ public class UserAccount {
     @Override
     public String toString() {
         return "UserAccount{"
-                + "userId='" + userId + ", fullName=" + fullName + ", email=" + email
+                + "userId='" + userId + ", fullName=" + fullName + ", email=" + email;
     }
 
     public String toFileString() {
