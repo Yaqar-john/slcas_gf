@@ -1,0 +1,93 @@
+import java.util.ArrayList;
+
+/**
+ * The central controller for the library system. 
+ * Coordinates between the UI and the data storage.
+ */
+public class LibraryManager {
+
+    // Private attributes (Encapsulation)
+    private LibraryDatabase database;
+    private BorrowController borrowController;
+    private boolean isSorted;
+    private String sortedByField;
+    private String sortAlgorithmUsed;
+
+    public LibraryManager() {
+        // Establishing the connections
+        this.database = new LibraryDatabase();
+        this.borrowController = new BorrowController();
+        this.isSorted = false;
+        this.sortedByField = "None";
+        this.sortAlgorithmUsed = "None";
+    }
+
+    // --- ADDING ITEMS ---
+
+    public Book addBook(String title, String author, int year, String genre, String isbn, int pages) {
+        Book newBook = new Book(title, author, year, genre, isbn, pages);
+        database.addItem(newBook);
+        return newBook;
+    }
+
+    public Magazine addMagazine(String title, String author, int year, int issue, String month) {
+        Magazine newMag = new Magazine(title, author, year, issue, month);
+        database.addItem(newMag);
+        return newMag;
+    }
+
+    public Journal addJournal(String title, String author, int year, int vol, int issue, String field) {
+        Journal newJournal = new Journal(title, author, year, vol, issue, field);
+        database.addItem(newJournal);
+        return newJournal;
+    }
+
+    // --- BORROW & RETURN (Delegation) ---
+
+    public BorrowResult borrowItem(String itemId, String userId) {
+        // Delegate logic to the controller
+        return borrowController.borrowItem(itemId, userId);
+    }
+
+    public ReturnResult returnItem(String itemId, String userId) {
+        return borrowController.returnItem(itemId, userId);
+    }
+
+    // --- SEARCH & SORT (Linear Search Requirement) ---
+
+    public ArrayList search(String query, String field) {
+        ArrayList list = database.getAllItems();
+        
+        // Traffic control: deciding which specific linear search to use
+        if (field.equalsIgnoreCase("title")) {
+            return SearchEngine.linearSearchByTitle(list, query);
+        } else if (field.equalsIgnoreCase("author")) {
+            return SearchEngine.linearSearchByAuthor(list, query);
+        }
+        
+        return new ArrayList(); // Return empty list if no field matches
+    }
+
+    public void mergeSortItems(String field) {
+        this.isSorted = true;
+        this.sortedByField = field;
+        this.sortAlgorithmUsed = "Merge Sort";
+        
+        // Implementation logic would call SearchEngine.mergeSort(database.getAllItems(), field)
+    }
+
+    public void quickSortItems(String field) {
+        this.isSorted = true;
+        this.sortedByField = field;
+        this.sortAlgorithmUsed = "Quick Sort";
+    }
+
+    // --- UTILITIES ---
+
+    public void saveAll() {
+        // Grabbing data and handing it to the static FileHandler
+        ArrayList items = database.getAllItems();
+        FileHandler.saveBooks(items);
+        FileHandler.saveCounters();
+    }
+}
